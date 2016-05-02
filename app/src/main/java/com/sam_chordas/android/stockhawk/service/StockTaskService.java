@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -18,6 +20,9 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -69,6 +74,7 @@ public class StockTaskService extends GcmTaskService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+
         if (params.getTag().equals("init") || params.getTag().equals("periodic")) {
             isUpdate = true;
             initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
@@ -127,9 +133,29 @@ public class StockTaskService extends GcmTaskService {
                         contentValues.put(QuoteColumns.ISCURRENT, 0);
                         mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
                                 null, null);
+                    } else {
+                        try {
+                            String stockxchg = new JSONObject(getResponse).getJSONObject("query").
+                                    getJSONObject("results").getJSONObject("quote").getString("StockExchange");
+
+                            if (stockxchg == "null") {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.e(LOG_TAG, "Symbol Invalid");
+                                    }
+                                });
+                                return result;
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                     mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
                             Utils.quoteJsonToContentVals(getResponse));
+
                 } catch (RemoteException | OperationApplicationException e) {
                     Log.e(LOG_TAG, "Error applying batch insert", e);
                 }

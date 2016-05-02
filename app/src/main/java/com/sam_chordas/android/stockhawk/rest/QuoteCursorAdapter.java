@@ -95,11 +95,12 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
       symbol.setTypeface(robotoLight);
       bidPrice = (TextView) itemView.findViewById(R.id.bid_price);
       change = (TextView) itemView.findViewById(R.id.change);
+
     }
 
     @Override
     public void onItemSelected(){
-      itemView.setBackgroundColor(Color.LTGRAY);
+      itemView.setBackgroundColor(Color.RED);
     }
 
     @Override
@@ -109,6 +110,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override
     public void onClick(View v) {
+
 
     }
   }
