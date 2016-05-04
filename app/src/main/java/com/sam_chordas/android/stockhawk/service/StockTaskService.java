@@ -9,11 +9,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.Utils;
@@ -41,6 +43,7 @@ public class StockTaskService extends GcmTaskService {
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate;
+
 
     public StockTaskService() {
     }
@@ -93,7 +96,7 @@ public class StockTaskService extends GcmTaskService {
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\"" +
-                            initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol")) + "\",");
+                            initQueryCursor.getString(initQueryCursor.getColumnIndex(QuoteColumns.SYMBOL)) + "\",");
                     initQueryCursor.moveToNext();
                 }
                 mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
@@ -106,7 +109,10 @@ public class StockTaskService extends GcmTaskService {
         } else if (params.getTag().equals("add")) {
             isUpdate = false;
             // get symbol from params.getExtra and build query
-            String stockInput = params.getExtras().getString("symbol");
+            String stockInput = params.getExtras().getString(QuoteColumns.SYMBOL);
+
+
+
             try {
                 urlStringBuilder.append(URLEncoder.encode("\"" + stockInput + "\")", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
@@ -142,7 +148,7 @@ public class StockTaskService extends GcmTaskService {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Log.e(LOG_TAG, "Symbol Invalid");
+                                        Toast.makeText(mContext.getApplicationContext(), mContext.getString(R.string.symbol_invalid), Toast.LENGTH_SHORT).show();
                                     }
                                 });
                                 return result;

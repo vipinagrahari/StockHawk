@@ -1,45 +1,83 @@
 package com.sam_chordas.android.stockhawk.ui;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
 import com.db.chart.model.LineSet;
 import com.db.chart.view.LineChartView;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
 /**
  * Created by user on 4/28/2016.
  */
-public class StockGraph extends AppCompatActivity {
+public class StockGraph extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private final String[] mLabels = {"Jan", "Fev", "Mar", "Apr", "Jun", "May", "Jul", "Aug", "Sep"};
-    private final float[][] mValues = {{3.5f, 4.7f, 4.3f, 8f, 6.5f, 9.9f, 7f, 8.3f, 7.0f},
-            {4.5f, 2.5f, 2.5f, 9f, 4.5f, 9.5f, 5f, 8.3f, 1.8f}};
+
     LineChartView chart;
+    String symbol;
+    LineSet dataset;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_line_graph);
 
         chart = (LineChartView) findViewById(R.id.linechart);
-        LineSet dataset = new LineSet(mLabels, mValues[0]);
+        dataset = new LineSet();
+        symbol = getIntent().getStringExtra(QuoteColumns.SYMBOL);
 
-        Toast.makeText(StockGraph.this, "" + getIntent().getIntExtra("index", -1), Toast.LENGTH_SHORT).show();
+        if (getSupportActionBar() != null) getSupportActionBar().setTitle(symbol);
+
+        getLoaderManager().initLoader(0, null, this);
 
 
-        dataset.setColor(Color.parseColor("#758cbb"))
-                .setFill(Color.parseColor("#2d374c"))
-                .setDotsColor(Color.parseColor("#758cbb"))
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        return new CursorLoader(this, QuoteProvider.Quotes.withSymbol(symbol),
+                new String[]{QuoteColumns.BIDPRICE, QuoteColumns.CREATED}, null, null, QuoteColumns.CREATED);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data == null || !data.moveToFirst()) {
+            return;
+        }
+
+        float max = Float.MIN_VALUE;
+        float min = Float.MAX_VALUE;
+        while (data.moveToNext()) {
+            float bidPrice = Float.parseFloat(data.getString(data.getColumnIndex(QuoteColumns.BIDPRICE)));
+            dataset.addPoint(Integer.toString(data.getPosition()), bidPrice);
+            if (bidPrice > max) max = bidPrice;
+            if (bidPrice < min) min = bidPrice;
+        }
+        chart.setAxisBorderValues((int) Math.max(0f, min - 5f), (int) max + 5);
+        chart.setLabelsColor(Color.WHITE);
+
+        dataset.setColor(ContextCompat.getColor(this, R.color.material_blue_700))
+                .setDotsColor(Color.WHITE)
                 .setThickness(4)
                 .setDashed(new float[]{10f, 10f});
 
         chart.addData(dataset);
         chart.show();
+    }
 
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
+
 }

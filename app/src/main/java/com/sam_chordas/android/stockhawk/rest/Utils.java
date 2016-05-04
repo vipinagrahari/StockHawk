@@ -2,21 +2,24 @@ package com.sam_chordas.android.stockhawk.rest;
 
 import android.content.ContentProviderOperation;
 import android.util.Log;
+
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by sam_chordas on 10/8/15.
  */
 public class Utils {
 
-  private static String LOG_TAG = Utils.class.getSimpleName();
-
   public static boolean showPercent = true;
+  private static String LOG_TAG = Utils.class.getSimpleName();
 
   public static ArrayList quoteJsonToContentVals(String JSON){
     ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
@@ -81,6 +84,7 @@ public class Utils {
           jsonObject.getString("ChangeinPercent"), true));
       builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
       builder.withValue(QuoteColumns.ISCURRENT, 1);
+      builder.withValue(QuoteColumns.CREATED, Calendar.getInstance().getTimeInMillis());
       if (change.charAt(0) == '-'){
         builder.withValue(QuoteColumns.ISUP, 0);
       }else{

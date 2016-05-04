@@ -80,9 +80,9 @@ public class StockWidgetService extends RemoteViewsService {
             mCursor.moveToPosition(position);
 
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.list_item_quote);
-            remoteViews.setTextViewText(R.id.stock_symbol, mCursor.getString(mCursor.getColumnIndex("symbol")));
-            remoteViews.setTextViewText(R.id.bid_price, mCursor.getString(mCursor.getColumnIndex("bid_price")));
-            remoteViews.setTextViewText(R.id.change, mCursor.getString(mCursor.getColumnIndex("change")));
+            remoteViews.setTextViewText(R.id.stock_symbol, mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
+            remoteViews.setTextViewText(R.id.bid_price, mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+            remoteViews.setTextViewText(R.id.change, mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE)));
 
             if (mCursor.getInt(mCursor.getColumnIndex("is_up")) == 1)
                 remoteViews.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_green);
@@ -92,6 +92,7 @@ public class StockWidgetService extends RemoteViewsService {
 
             Intent fillInIntent = new Intent();
             fillInIntent.putExtra(StockWidgetProvider.EXTRA_ITEM, position);
+            fillInIntent.putExtra(QuoteColumns.SYMBOL, mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
             remoteViews.setOnClickFillInIntent(R.id.list_item_quote, fillInIntent);
 
             return remoteViews;

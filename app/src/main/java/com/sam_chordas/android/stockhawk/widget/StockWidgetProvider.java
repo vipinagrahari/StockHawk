@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 import com.sam_chordas.android.stockhawk.ui.StockGraph;
 
 /**
@@ -16,7 +18,9 @@ import com.sam_chordas.android.stockhawk.ui.StockGraph;
  */
 public class StockWidgetProvider extends AppWidgetProvider {
 
-    public static final String CLICK_ACTION = "CLICK_ACTION";
+    public static final String APP_ACTION = "APP_ACTION";
+    public static final String DETAIL_ACTION = "DETAIL_ACTION";
+
     public static final String EXTRA_ITEM = "EXTRA_ITEM";
 
 
@@ -25,15 +29,19 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
 
-        if (intent.getAction() == CLICK_ACTION) {
+        if (intent.getAction() == DETAIL_ACTION) {
             int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-            int viewIndex = intent.getIntExtra(EXTRA_ITEM, -1);
 
-            Intent activityIntent = new Intent(context, StockGraph.class);
-            activityIntent.putExtra("index", viewIndex);
+            Intent detailIntent = new Intent(context, StockGraph.class);
+
+            detailIntent.putExtra(QuoteColumns.SYMBOL, intent.getStringExtra(QuoteColumns.SYMBOL));
+            detailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(detailIntent);
+
+        } else if (intent.getAction() == APP_ACTION) {
+            Intent activityIntent = new Intent(context, MyStocksActivity.class);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(activityIntent);
-
         }
 
 
@@ -54,12 +62,21 @@ public class StockWidgetProvider extends AppWidgetProvider {
             views.setEmptyView(R.id.rv_stock, R.id.empty_view);
 
 
-            Intent clickIntent = new Intent(context, StockWidgetProvider.class);
-            clickIntent.setAction(CLICK_ACTION);
-            clickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            clickIntent.setData(Uri.parse(clickIntent.toUri(Intent.URI_INTENT_SCHEME)));
-            PendingIntent pendingClickIntent = PendingIntent.getBroadcast(context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            Intent detailIntent = new Intent(context, StockWidgetProvider.class);
+            detailIntent.setAction(DETAIL_ACTION);
+            detailIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            detailIntent.setData(Uri.parse(detailIntent.toUri(Intent.URI_INTENT_SCHEME)));
+            PendingIntent pendingClickIntent = PendingIntent.getBroadcast(context, 0, detailIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             views.setPendingIntentTemplate(R.id.rv_stock, pendingClickIntent);
+
+
+            Intent appIntent = new Intent(context, StockWidgetProvider.class);
+            appIntent.setAction(APP_ACTION);
+            appIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            appIntent.setData(Uri.parse(appIntent.toUri(Intent.URI_INTENT_SCHEME)));
+            PendingIntent pendingAppIntent = PendingIntent.getBroadcast(context, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            views.setOnClickPendingIntent(R.id.widget_title, pendingAppIntent);
+
 
 
             appWidgetManager.updateAppWidget(appWidgetId, views);
