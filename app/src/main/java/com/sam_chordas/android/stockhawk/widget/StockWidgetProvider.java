@@ -62,6 +62,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             views.setEmptyView(R.id.rv_stock, R.id.empty_view);
 
 
+            // For starting Stock Graph activity on clicking a list item
             Intent detailIntent = new Intent(context, StockWidgetProvider.class);
             detailIntent.setAction(DETAIL_ACTION);
             detailIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -69,7 +70,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             PendingIntent pendingClickIntent = PendingIntent.getBroadcast(context, 0, detailIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             views.setPendingIntentTemplate(R.id.rv_stock, pendingClickIntent);
 
-
+            //for opening app on clicking widget header
             Intent appIntent = new Intent(context, StockWidgetProvider.class);
             appIntent.setAction(APP_ACTION);
             appIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
